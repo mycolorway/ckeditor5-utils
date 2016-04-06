@@ -14,20 +14,27 @@ import utils from './utils.js';
  * @memberOf utils
  */
 export default class EventInfo {
-	constructor( source, name ) {
+	constructor( source, name, priority ) {
 		/**
 		 * The object that fired the event.
 		 *
-		 * @member utils.EventInfo#source
+		 * @member {Object} utils.EventInfo#source
 		 */
 		this.source = source;
 
 		/**
 		 * The event name.
 		 *
-		 * @member utils.EventInfo#name
+		 * @member {String} utils.EventInfo#name
 		 */
 		this.name = name;
+
+		/**
+		 * The event priority.
+		 *
+		 * @member {Number} utils.EventInfo#priority
+		 */
+		this.priority = priority;
 
 		// The following methods are defined in the constructor because they must be re-created per instance.
 
