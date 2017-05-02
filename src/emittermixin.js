@@ -8,11 +8,9 @@
  */
 
 import EventInfo from './eventinfo';
-import uid from './uid';
 import priorities from './priorities';
 
 const _listeningTo = Symbol( 'listeningTo' );
-const _emitterId = Symbol( 'emitterId' );
 
 /**
  * Mixin that injects the events API into its host.
@@ -41,35 +39,7 @@ const EmitterMixin = {
 	 * @param {Object} [options.context] The object that represents `this` in the callback. Defaults to the object firing the event.
 	 */
 	on( event, callback, options = {} ) {
-		createEventNamespace( this, event );
-		const lists = getCallbacksListsForNamespace( this, event );
-		const priority = priorities.get( options.priority );
-
-		callback = {
-			callback: callback,
-			context: options.context || this,
-			priority: priority
-		};
-
-		// Add the callback to all callbacks list.
-		for ( let callbacks of lists ) {
-			// Add the callback to the list in the right priority position.
-			let added = false;
-
-			for ( let i = 0; i < callbacks.length; i++ ) {
-				if ( callbacks[ i ].priority < priority ) {
-					callbacks.splice( i, 0, callback );
-					added = true;
-
-					break;
-				}
-			}
-
-			// Add at the end, if right place was not found.
-			if ( !added ) {
-				callbacks.push( callback );
-			}
-		}
+		this.listenTo( this, event, callback, options );
 	},
 
 	/**
@@ -85,7 +55,7 @@ const EmitterMixin = {
 	 * order they were added.
 	 * @param {Object} [options.context] The object that represents `this` in the callback. Defaults to the object firing the event.
 	 */
-	once( event, callback, options ) {
+	once( event, callback, options = {} ) {
 		const onceCallback = function( event ) {
 			// Go off() at the first call.
 			event.off();
@@ -104,20 +74,55 @@ const EmitterMixin = {
 	 * @method #off
 	 * @param {String} event The name of the event.
 	 * @param {Function} callback The function to stop being called.
-	 * @param {Object} [context] The context object to be removed, pared with the given callback. To handle cases where
-	 * the same callback is used several times with different contexts.
+	 * @param context
 	 */
 	off( event, callback, context ) {
+		this.stopListening( this, event, callback, context );
+	},
+
+	_setCallback( event, callback, listener, options = {} ) {
+		createEventNamespace( this, event );
+
+		const lists = getCallbacksListsForNamespace( this, event );
+		const priority = priorities.get( options.priority );
+		const context = options.context || listener;
+
+		const eventItem = { callback, listener, priority, context };
+
+		// Add the callback to all callbacks list.
+		for ( let items of lists ) {
+			// Add the callback to the list in the right priority position.
+			let added = false;
+
+			for ( let i = 0; i < items.length; i++ ) {
+				if ( items[ i ].priority < priority ) {
+					items.splice( i, 0, eventItem );
+					added = true;
+
+					break;
+				}
+			}
+
+			// Add at the end, if right place was not found.
+			if ( !added ) {
+				items.push( eventItem );
+			}
+		}
+	},
+
+	_removeCallback( event, callback, listener, context ) {
 		const lists = getCallbacksListsForNamespace( this, event );
 
-		for ( let callbacks of lists ) {
-			for ( let i = 0; i < callbacks.length; i++ ) {
-				if ( callbacks[ i ].callback == callback ) {
-					if ( !context || context == callbacks[ i ].context ) {
-						// Remove the callback from the list (fixing the next index).
-						callbacks.splice( i, 1 );
-						i--;
-					}
+		for ( let items of lists ) {
+			for ( let i = 0; i < items.length; i++ ) {
+				const item = items[ i ];
+
+				if ( item.callback == callback && item.listener == listener && item.context == context ) {
+					// Remove the callback from the list (fixing the next index).
+					items.splice( i, 1 );
+
+					// Fix the iterator index.
+					i--;
 				}
 			}
 		}
@@ -136,50 +141,20 @@ const EmitterMixin = {
 	 * order they were added.
 	 * @param {Object} [options.context] The object that represents `this` in the callback. Defaults to the object firing the event.
 	 */
-	listenTo( emitter, event, callback, options ) {
-		let emitters, emitterId, emitterInfo, eventCallbacks;
-
-		// _listeningTo contains a list of emitters that this object is listening to.
-		// This list has the following format:
-		//
-		// _listeningTo: {
-		//     emitterId: {
-		//         emitter: emitter,
-		//         callbacks: {
-		//             event1: [ callback1, callback2, ... ]
-		//             ....
-		//         }
-		//     },
-		//     ...
-		// }
-
+	listenTo( emitter, eventName, callback, options = {} ) {
 		if ( !this[ _listeningTo ] ) {
-			this[ _listeningTo ] = {};
+			this[ _listeningTo ] = new Map();
 		}
 
-		emitters = this[ _listeningTo ];
-
-		if ( !_getEmitterId( emitter ) ) {
-			_setEmitterId( emitter );
+		if ( !this[ _listeningTo ].has( emitter ) ) {
+			this[ _listeningTo ].set( emitter, new Set() );
 		}
 
-		emitterId = _getEmitterId( emitter );
+		const context = options.context || this;
 
-		if ( !( emitterInfo = emitters[ emitterId ] ) ) {
-			emitterInfo = emitters[ emitterId ] = {
-				emitter: emitter,
-				callbacks: {}
-			};
-		}
+		this[ _listeningTo ].get( emitter ).add( { eventName, callback, context } );
 
-		if ( !( eventCallbacks = emitterInfo.callbacks[ event ] ) ) {
-			eventCallbacks = emitterInfo.callbacks[ event ] = [];
-		}
-
-		eventCallbacks.push( callback );
-
-		// Finally register the callback to the event.
-		emitter.on( event, callback, options );
+		emitter._setCallback( eventName, callback, this, options );
 	},
 
 	/**
@@ -197,41 +172,46 @@ const EmitterMixin = {
 	 * @param {Function} [callback] (Requires the `event`) The function to be removed from the call list for the given
 	 * `event`.
 	 */
-	stopListening( emitter, event, callback ) {
-		let emitters = this[ _listeningTo ];
-		let emitterId = emitter && _getEmitterId( emitter );
-		let emitterInfo = emitters && emitterId && emitters[ emitterId ];
-		let eventCallbacks = emitterInfo && event && emitterInfo.callbacks[ event ];
-
-		// Stop if nothing has been listened.
-		if ( !emitters || ( emitter && !emitterInfo ) || ( event && !eventCallbacks ) ) {
+	stopListening( emitter = null, eventName = null, callback = null, context = null ) {
+		// If this does not listen to anything, don't do anything.
+		if ( !this[ _listeningTo ] ) {
 			return;
 		}
 
-		// All params provided. off() that single callback.
-		if ( callback ) {
-			emitter.off( event, callback );
-		}
-		// Only `emitter` and `event` provided. off() all callbacks for that event.
-		else if ( eventCallbacks ) {
-			while ( ( callback = eventCallbacks.pop() ) ) {
-				emitter.off( event, callback );
+		// If emitter has not been passed, stop listening to all events.
+		if ( !emitter ) {
+			for ( let emitter of this[ _listeningTo ].keys() ) {
+				this.stopListening( emitter );
 			}
-			delete emitterInfo.callbacks[ event ];
+
+			return;
 		}
-		// Only `emitter` provided. off() all events for that emitter.
-		else if ( emitterInfo ) {
-			for ( event in emitterInfo.callbacks ) {
-				this.stopListening( emitter, event );
-			}
-			delete emitters[ emitterId ];
+
+		const registeredItems = this[ _listeningTo ].get( emitter );
+
+		// If listener does not listen to given emitter, don't do anything.
+		if ( !registeredItems ) {
+			return;
 		}
-		// No params provided. off() all emitters.
-		else {
-			for ( emitterId in emitters ) {
-				this.stopListening( emitters[ emitterId ].emitter );
+
+		for ( let item of registeredItems ) {
+			// If event name does not fit, do not remove callback.
+			if ( eventName && eventName != item.eventName ) {
+				continue;
 			}
-			delete this[ _listeningTo ];
+
+			// If callback does not fit, do not remove callback.
+			if ( callback && callback != item.callback ) {
+				continue;
+			}
+
+			// If context does not fit, do not remove callback.
+			if ( context && context != item.context ) {
+				continue;
+			}
+
+			emitter._removeCallback( item.eventName, item.callback, this, item.context );
+			registeredItems.delete( item );
 		}
 	},
 
@@ -368,48 +348,6 @@ const EmitterMixin = {
 };
 
 export default EmitterMixin;
-
-/**
- * Checks if `listeningEmitter` listens to an emitter with given `listenedToEmitterId` and if so, returns that emitter.
- * If not, returns `null`.
- *
- * @protected
- * @param {module:utils/emittermixin~EmitterMixin} listeningEmitter Emitter that listens.
- * @param {String} listenedToEmitterId Unique emitter id of emitter listened to.
- * @returns {module:utils/emittermixin~EmitterMixin|null}
- */
-export function _getEmitterListenedTo( listeningEmitter, listenedToEmitterId ) {
-	if ( listeningEmitter[ _listeningTo ] && listeningEmitter[ _listeningTo ][ listenedToEmitterId ] ) {
-		return listeningEmitter[ _listeningTo ][ listenedToEmitterId ].emitter;
-	}
-
-	return null;
-}
-
-/**
- * Sets emitter's unique id.
- *
- * **Note:** `_emitterId` can be set only once.
- *
- * @protected
- * @param {module:utils/emittermixin~EmitterMixin} emitter Emitter for which id will be set.
- * @param {String} [id] Unique id to set. If not passed, random unique id will be set.
- */
-export function _setEmitterId( emitter, id ) {
-	if ( !emitter[ _emitterId ] ) {
-		emitter[ _emitterId ] = id || uid();
-	}
-}
-
-/**
- * Returns emitter's unique id.
- *
- * @protected
- * @param {module:utils/emittermixin~EmitterMixin} emitter Emitter which id will be returned.
- */
-export function _getEmitterId( emitter ) {
-	return emitter[ _emitterId ];
-}
 
 // Gets the internal `_events` property of the given object.
 // `_events` property store all lists with callbacks for registered event names.

@@ -4,7 +4,6 @@
  */
 
 import EmitterMixin from '../src/emittermixin';
-import { _getEmitterListenedTo, _getEmitterId, _setEmitterId } from '../src/emittermixin';
 import EventInfo from '../src/eventinfo';
 
 describe( 'EmitterMixin', () => {
@@ -414,16 +413,14 @@ describe( 'EmitterMixin', () => {
 			let spy1 = sinon.spy();
 			let spy2 = sinon.spy();
 
-			listener.listenTo( emitter, 'event1', spy1 );
-			listener.listenTo( emitter, 'event2', spy2 );
+			listener.listenTo( emitter, 'event', spy1 );
+			listener.listenTo( emitter, 'event', spy2 );
 
-			emitter.fire( 'event1' );
-			emitter.fire( 'event2' );
+			emitter.fire( 'event' );
 
-			listener.stopListening( emitter, 'event1', spy1 );
+			listener.stopListening( emitter, 'event', spy1 );
 
-			emitter.fire( 'event1' );
-			emitter.fire( 'event2' );
+			emitter.fire( 'event' );
 
 			sinon.assert.calledOnce( spy1 );
 			sinon.assert.calledTwice( spy2 );
@@ -1098,48 +1095,6 @@ describe( 'EmitterMixin', () => {
 		expect( evtInfo.path ).to.deep.equal( expectedPath );
 		expect( evtArgs.slice( 1 ) ).to.deep.equal( expectedData );
 	}
-} );
-
-describe( 'emitter id', () => {
-	let emitter;
-
-	beforeEach( () => {
-		emitter = getEmitterInstance();
-	} );
-
-	it( 'should be undefined before it is set', () => {
-		expect( _getEmitterId( emitter ) ).to.be.undefined;
-	} );
-
-	it( 'should be settable but only once', () => {
-		_setEmitterId( emitter, 'abc' );
-
-		expect( _getEmitterId( emitter ) ).to.equal( 'abc' );
-
-		_setEmitterId( emitter, 'xyz' );
-
-		expect( _getEmitterId( emitter ) ).to.equal( 'abc' );
-	} );
-} );
-
-describe( '_getEmitterListenedTo', () => {
-	let emitter, listener;
-
-	beforeEach( () => {
-		emitter = getEmitterInstance();
-		listener = getEmitterInstance();
-	} );
-
-	it( 'should return null if listener do not listen to emitter with given id', () => {
-		expect( _getEmitterListenedTo( listener, 'abc' ) ).to.be.null;
-	} );
-
-	it( 'should return emitter with given id', () => {
-		listener.listenTo( emitter, 'eventName', () => {} );
-		const emitterId = _getEmitterId( emitter );
-
-		expect( _getEmitterListenedTo( listener, emitterId ) ).to.equal( emitter );
-	} );
 } );
 
 function getEmitterInstance() {

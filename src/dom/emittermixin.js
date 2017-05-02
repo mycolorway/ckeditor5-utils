@@ -8,7 +8,6 @@
  */
 
 import EmitterMixin from '../emittermixin';
-import { _getEmitterListenedTo, _setEmitterId } from '../emittermixin';
 import uid from '../uid';
 import extend from '../lib/lodash/extend';
 import isNative from '../lib/lodash/isNative';
@@ -59,7 +58,7 @@ const DomEmitterMixin = extend( {}, EmitterMixin, {
 		// Check if emitter is an instance of DOM Node. If so, replace the argument with
 		// corresponding ProxyEmitter (or create one if not existing).
 		if ( isDomNode( emitter ) ) {
-			args[ 0 ] = this._getProxyEmitter( emitter ) || new ProxyEmitter( emitter );
+			args[ 0 ] = this._getProxyEmitter( emitter ) || this._createProxyEmitter( emitter );
 		}
 
 		// Execute parent class method with Emitter (or ProxyEmitter) instance.
@@ -110,7 +109,26 @@ const DomEmitterMixin = extend( {}, EmitterMixin, {
 	 * @return {module:utils/dom/emittermixin~ProxyEmitter} ProxyEmitter instance or null.
 	 */
 	_getProxyEmitter( node ) {
-		return _getEmitterListenedTo( this, getNodeUID( node ) );
+		if ( !this._proxyEmitters ) {
+			return null;
+		}
+
+		const uid = getNodeUID( node );
+
+		return this._proxyEmitters.get( uid ) || null;
+	},
+
+	_createProxyEmitter( node ) {
+		if ( !this._proxyEmitters ) {
+			this._proxyEmitters = new Map();
+		}
+
+		const uid = getNodeUID( node );
+		const emitter = new ProxyEmitter( node );
+
+		this._proxyEmitters.set( uid, emitter );
+
+		return emitter;
 	}
 } );
 
@@ -126,20 +144,18 @@ export default DomEmitterMixin;
  *     +----------------------------+                           |             addEventListener( click, ... )
  *     | Host                       |                           |   +---------------------------------------------+
  *     +----------------------------+                           |   |       removeEventListener( click, ... )     |
- *     | _listeningTo: {            |                +----------v-------------+                                   |
- *     |   UID: {                   |                | ProxyEmitter           |                                   |
- *     |     emitter: ProxyEmitter, |                +------------------------+                      +------------v----------+
- *     |     callbacks: {           |                | events: {              |                      | Node (HTMLElement)    |
- *     |       click: [ callbacks ] |                |   click: [ callbacks ] |                      +-----------------------+
- *     |     }                      |                | },                     |                      | data-ck-expando: UID  |
- *     |   }                        |                | _domNode: Node,        |                      +-----------------------+
- *     | }                          |                | _domListeners: {},     |                                   |
- *     | +------------------------+ |                | _emitterId: UID        |                                   |
- *     | | DomEmitterMixin        | |                +--------------^---------+                                   |
- *     | +------------------------+ |                           |   |                                             |
- *     +--------------^-------------+                           |   +---------------------------------------------+
- *                    |                                         |                  click (DOM Event)
- *                    +-----------------------------------------+
+ *     | _proxyEmitters: {          |                +----------v-------------+                                   |
+ *     |   UID:  ProxyEmitter,      |                | ProxyEmitter           |                                   |
+ *     |   UID2: ProxyEmitter,      |                +------------------------+                      +------------v----------+
+ *     |   ...                      |                | events: {              |                      | Node (HTMLElement)    |
+ *     | }                          |                |   click: [ callbacks ] |                      +-----------------------+
+ *     |                            |                | },                     |                      | data-ck-expando: UID  |
+ *     | +------------------------+ |                | _domNode: Node,        |                      +-----------------------+
+ *     | | DomEmitterMixin        | |                | _domListeners: {},     |                                   |
+ *     | +------------------------+ |                +--------------^---------+                                   |
+ *     +--------------^-------------+                           |   |                                             |
+ *                    |                                         |   +---------------------------------------------+
+ *                    +-----------------------------------------+                  click (DOM Event)
  *                                fire( click, DOM Event )
  *
  * @mixes module:utils/emittermixin~EmitterMixin
@@ -152,9 +168,6 @@ class ProxyEmitter {
 	 * @returns {Object} ProxyEmitter instance bound to the DOM Node.
 	 */
 	constructor( node ) {
-		// Set emitter ID to match DOM Node "expando" property.
-		_setEmitterId( this, getNodeUID( node ) );
-
 		// Remember the DOM Node this ProxyEmitter is bound to.
 		this._domNode = node;
 	}
@@ -186,9 +199,9 @@ extend( ProxyEmitter.prototype, EmitterMixin, {
 	 *
 	 * @method module:utils/dom/emittermixin~ProxyEmitter#on
 	 */
-	on( event, callback, options = {} ) {
+	_setCallback( event, callback, listener, options = {} ) {
 		// Execute parent class method first.
-		EmitterMixin.on.apply( this, arguments );
+		EmitterMixin._setCallback.apply( this, arguments );
 
 		// If the DOM Listener for given event already exist it is pointless
 		// to attach another one.
@@ -220,9 +233,9 @@ extend( ProxyEmitter.prototype, EmitterMixin, {
 	 *
 	 * @method module:utils/dom/emittermixin~ProxyEmitter#off
 	 */
-	off( event ) {
+	_removeCallback( event ) {
 		// Execute parent class method first.
-		EmitterMixin.off.apply( this, arguments );
+		EmitterMixin._removeCallback.apply( this, arguments );
 
 		let events;
 
