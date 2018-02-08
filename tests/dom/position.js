@@ -93,6 +93,43 @@ describe( 'getOptimalPosition()', () => {
 		} );
 	} );
 
+	it( 'should pass the viewport rect to the positioning function', () => {
+		setElementTargetPlayground();
+
+		const expectedViewportRect = {
+			bottom: 10000,
+			height: 10000,
+			left: 0,
+			right: 10000,
+			top: 0,
+			width: 10000
+		};
+
+		getOptimalPosition( {
+			element, target,
+			fitInViewport: true,
+			positions: [
+				( targetRect, elementRect, viewportRect ) => {
+					expect( viewportRect ).to.deep.equal( expectedViewportRect );
+
+					return { top: 0, left: 0 };
+				}
+			]
+		} );
+
+		getOptimalPosition( {
+			element, target,
+			fitInViewport: false,
+			positions: [
+				( targetRect, elementRect, viewportRect ) => {
+					expect( viewportRect ).to.deep.equal( expectedViewportRect );
+
+					return { top: 0, left: 0 };
+				}
+			]
+		} );
+	} );
+
 	describe( 'for single position', () => {
 		beforeEach( setElementTargetPlayground );
 

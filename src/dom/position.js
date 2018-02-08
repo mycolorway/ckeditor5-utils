@@ -91,24 +91,37 @@ export function getOptimalPosition( { element, target, positions, limiter, fitIn
 	}
 
 	const positionedElementAncestor = getPositionedAncestor( element.parentElement );
-	const elementRect = new Rect( element );
-	const targetRect = new Rect( target );
+
+	// An internal object which propagates data about current positioning environment
+	// and constraints across helper utils.
+	//
+	// @typedef {Object} PositionEnvData
+	//
+	// @param {utils/dom/rect~Rect} targetRect A rect of the {@link module:utils/dom/position~Options#target}.
+	// @param {utils/dom/rect~Rect} elementRect A rect of positioned {@link module:utils/dom/position~Options#element}.
+	// @param {utils/dom/rect~Rect} limiterRect A rect of the {@link module:utils/dom/position~Options#limiter}.
+	// @param {utils/dom/rect~Rect} viewportRect A rect of the viewport.
+	// @param {Boolean} fitInViewport If true, prefer positions that fits in the browser viewport.
+	const data = {
+		targetRect: new Rect( target ),
+		elementRect: new Rect( element ),
+		limiterRect: limiter && new Rect( limiter ).getVisible(),
+		viewportRect: new Rect( global.window ),
+		fitInViewport
+	};
 
 	let bestPosition;
 	let name;
 
 	// If there are no limits, just grab the very first position and be done with that drama.
 	if ( !limiter && !fitInViewport ) {
-		[ name, bestPosition ] = getPosition( positions[ 0 ], targetRect, elementRect );
+		[ name, bestPosition ] = getPosition( positions[ 0 ], data );
 	} else {
-		const limiterRect = limiter && new Rect( limiter ).getVisible();
-		const viewportRect = fitInViewport && new Rect( global.window );
-
 		[ name, bestPosition ] =
-			getBestPosition( positions, targetRect, elementRect, limiterRect, viewportRect ) ||
+			getBestPosition( positions, data ) ||
 			// If there's no best position found, i.e. when all intersections have no area because
 			// rects have no width or height, then just use the first available position.
-			getPosition( positions[ 0 ], targetRect, elementRect );
+			getPosition( positions[ 0 ], data );
 	}
 
 	let { left, top } = getAbsoluteRectCoordinates( bestPosition );
@@ -148,11 +161,10 @@ export function getOptimalPosition( { element, target, positions, limiter, fitIn
 //
 // @private
 // @param {Function} position A function returning {@link module:utils/dom/position~Position}.
-// @param {utils/dom/rect~Rect} targetRect A rect of the target.
-// @param {utils/dom/rect~Rect} elementRect A rect of positioned element.
+// @param {PositionEnvData} positionEnvData Positioning data.
 // @returns {Array} An array containing position name and its Rect.
-function getPosition( position, targetRect, elementRect ) {
-	const { left, top, name } = position( targetRect, elementRect );
+function getPosition( position, { targetRect, elementRect, viewportRect } ) {
+	const { left, top, name } = position( targetRect, elementRect, viewportRect );
 
 	return [ name, elementRect.clone().moveTo( left, top ) ];
 }
@@ -163,12 +175,16 @@ function getPosition( position, targetRect, elementRect ) {
 // @private
 // @param {module:utils/dom/position~Options#positions} positions Functions returning
 // {@link module:utils/dom/position~Position} to be checked, in the order of preference.
-// @param {utils/dom/rect~Rect} targetRect A rect of the {@link module:utils/dom/position~Options#target}.
-// @param {utils/dom/rect~Rect} elementRect A rect of positioned {@link module:utils/dom/position~Options#element}.
-// @param {utils/dom/rect~Rect} limiterRect A rect of the {@link module:utils/dom/position~Options#limiter}.
-// @param {utils/dom/rect~Rect} viewportRect A rect of the viewport.
+// @param {PositionEnvData} positionEnvData Positioning data.
 // @returns {Array} An array containing the name of the position and it's rect.
-function getBestPosition( positions, targetRect, elementRect, limiterRect, viewportRect ) {
+function getBestPosition( positions, positionEnvData ) {
+	const {
+		limiterRect,
+		fitInViewport,
+		elementRect,
+		viewportRect
+	} = positionEnvData;
+
 	let maxLimiterIntersectArea = 0;
 	let maxViewportIntersectArea = 0;
 	let bestPositionRect;
@@ -178,12 +194,12 @@ function getBestPosition( positions, targetRect, elementRect, limiterRect, viewp
 	const elementRectArea = elementRect.getArea();
 
 	positions.some( position => {
-		const [ positionName, positionRect ] = getPosition( position, targetRect, elementRect );
+		const [ positionName, positionRect ] = getPosition( position, positionEnvData );
 		let limiterIntersectArea;
 		let viewportIntersectArea;
 
 		if ( limiterRect ) {
-			if ( viewportRect ) {
+			if ( fitInViewport ) {
 				// Consider only the part of the limiter which is visible in the viewport. So the limiter is getting limited.
 				const limiterViewportIntersectRect = limiterRect.getIntersection( viewportRect );
 
@@ -199,18 +215,18 @@ function getBestPosition( positions, targetRect, elementRect, limiterRect, viewp
 			}
 		}
 
-		if ( viewportRect ) {
+		if ( fitInViewport ) {
 			viewportIntersectArea = viewportRect.getIntersectionArea( positionRect );
 		}
 
 		// The only criterion: intersection with the viewport.
-		if ( viewportRect && !limiterRect ) {
+		if ( fitInViewport && !limiterRect ) {
 			if ( viewportIntersectArea > maxViewportIntersectArea ) {
 				setBestPosition();
 			}
 		}
 		// The only criterion: intersection with the limiter.
-		else if ( !viewportRect && limiterRect ) {
+		else if ( !fitInViewport && limiterRect ) {
 			if ( limiterIntersectArea > maxLimiterIntersectArea ) {
 				setBestPosition();
 			}
@@ -275,6 +291,12 @@ function getAbsoluteRectCoordinates( { left, top } ) {
 /**
  * An array of functions which return {@link module:utils/dom/position~Position} relative
  * to the `target`, in the order of preference.
+ *
+ * Each function is called with the following arguments:
+ *
+ * * `targetRect` – a {@link utils/dom/rect~Rect rect} of {@link module:utils/dom/position~Options#element element},
+ * * `elementRect` – a {@link utils/dom/rect~Rect rect} of {@link module:utils/dom/position~Options#target target},
+ * * `viewportRect` – a {@link utils/dom/rect~Rect rect} of the web browser viewport.
  *
  * @member {Array.<Function>} #positions
  */
