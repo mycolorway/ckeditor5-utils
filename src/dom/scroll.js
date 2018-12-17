@@ -18,6 +18,7 @@ const utils = {};
  * This helper will scroll all `target` ancestors and the web browser viewport to reveal the target to
  * the user. If the `target` is already visible, nothing will happen.
  *
+ * @param {Object} options
  * @param {HTMLElement|Range} options.target A target, which supposed to become visible to the user.
  * @param {Number} [options.viewportOffset] An offset from the edge of the viewport (in pixels)
  * the `target` will be moved by when the viewport is scrolled. It enhances the user experience
@@ -142,7 +143,7 @@ Object.assign( utils, {
 //
 // @private
 // @param {Window} window A window which is scrolled to reveal the rect.
-// @param {module:utils/dom/rect~Rect} rect A rect which is to be revealed.
+// @param {Rect} rect A rect which is to be revealed.
 // @param {Number} viewportOffset See scrollViewportToShowTarget.
 function scrollWindowToShowRect( window, rect, viewportOffset ) {
 	const targetShiftedDownRect = rect.clone().moveBy( 0, viewportOffset );
@@ -206,8 +207,8 @@ function scrollAncestorsToShowRect( parent, getRect ) {
 // Determines if a given `Rect` extends beyond the bottom edge of the second `Rect`.
 //
 // @private
-// @param {module:utils/dom/rect~Rect} firstRect
-// @param {module:utils/dom/rect~Rect} secondRect
+// @param {Rect} firstRect
+// @param {Rect} secondRect
 function isBelow( firstRect, secondRect ) {
 	return firstRect.bottom > secondRect.bottom;
 }
@@ -215,8 +216,8 @@ function isBelow( firstRect, secondRect ) {
 // Determines if a given `Rect` extends beyond the top edge of the second `Rect`.
 //
 // @private
-// @param {module:utils/dom/rect~Rect} firstRect
-// @param {module:utils/dom/rect~Rect} secondRect
+// @param {Rect} firstRect
+// @param {Rect} secondRect
 function isAbove( firstRect, secondRect ) {
 	return firstRect.top < secondRect.top;
 }
@@ -224,8 +225,8 @@ function isAbove( firstRect, secondRect ) {
 // Determines if a given `Rect` extends beyond the left edge of the second `Rect`.
 //
 // @private
-// @param {module:utils/dom/rect~Rect} firstRect
-// @param {module:utils/dom/rect~Rect} secondRect
+// @param {Rect} firstRect
+// @param {Rect} secondRect
 function isLeftOf( firstRect, secondRect ) {
 	return firstRect.left < secondRect.left;
 }
@@ -233,8 +234,8 @@ function isLeftOf( firstRect, secondRect ) {
 // Determines if a given `Rect` extends beyond the right edge of the second `Rect`.
 //
 // @private
-// @param {module:utils/dom/rect~Rect} firstRect
-// @param {module:utils/dom/rect~Rect} secondRect
+// @param {Rect} firstRect
+// @param {Rect} secondRect
 function isRightOf( firstRect, secondRect ) {
 	return firstRect.right > secondRect.right;
 }
@@ -278,7 +279,7 @@ function getParentElement( elementOrRange ) {
 // @private
 // @param {HTMLElement|Range} target Element or range which rect should be returned.
 // @param {Window} relativeWindow A window the rect should be relative to.
-// @returns {module:utils/dom/rect~Rect}
+// @returns {Rect}
 function getRectRelativeToWindow( target, relativeWindow ) {
 	const targetWindow = getWindow( target );
 	const rect = new Rect( target );

@@ -74,20 +74,20 @@ import { isFunction } from 'lodash-es';
  *		element.style.top = top;
  *		element.style.left = left;
  *
- * @param {module:utils/dom/position~Options} options Positioning options object.
- * @returns {module:utils/dom/position~Position}
+ * @param {Options} options Positioning options object.
+ * @returns {Position}
  */
 export function getOptimalPosition( { element, target, positions, limiter, fitInViewport } ) {
-	// If the {@link module:utils/dom/position~Options#target} is a function, use what it returns.
+	// If the {@link Options#target} is a function, use what it returns.
 	// https://github.com/ckeditor/ckeditor5-utils/issues/157
 	if ( isFunction( target ) ) {
-		target = target();
+		target = (/** @type {() => Rect | HTMLElement | Range | ClientRect} */( target ) )();
 	}
 
-	// If the {@link module:utils/dom/position~Options#limiter} is a function, use what it returns.
+	// If the {@link Options#limiter} is a function, use what it returns.
 	// https://github.com/ckeditor/ckeditor5-ui/issues/260
 	if ( isFunction( limiter ) ) {
-		limiter = limiter();
+		limiter = (/** @type Function */( limiter )() );
 	}
 
 	const positionedElementAncestor = getPositionedAncestor( element.parentElement );
@@ -147,7 +147,7 @@ export function getOptimalPosition( { element, target, positions, limiter, fitIn
 // For given position function, returns a corresponding `Rect` instance.
 //
 // @private
-// @param {Function} position A function returning {@link module:utils/dom/position~Position}.
+// @param {Function} position A function returning {@link Position}.
 // @param {utils/dom/rect~Rect} targetRect A rect of the target.
 // @param {utils/dom/rect~Rect} elementRect A rect of positioned element.
 // @returns {Array} An array containing position name and its Rect.
@@ -161,11 +161,11 @@ function getPosition( position, targetRect, elementRect ) {
 // fit of the `elementRect` into the `limiterRect` and `viewportRect`.
 //
 // @private
-// @param {module:utils/dom/position~Options#positions} positions Functions returning
-// {@link module:utils/dom/position~Position} to be checked, in the order of preference.
-// @param {utils/dom/rect~Rect} targetRect A rect of the {@link module:utils/dom/position~Options#target}.
-// @param {utils/dom/rect~Rect} elementRect A rect of positioned {@link module:utils/dom/position~Options#element}.
-// @param {utils/dom/rect~Rect} limiterRect A rect of the {@link module:utils/dom/position~Options#limiter}.
+// @param {Options#positions} positions Functions returning
+// {@link Position} to be checked, in the order of preference.
+// @param {utils/dom/rect~Rect} targetRect A rect of the {@link Options#target}.
+// @param {utils/dom/rect~Rect} elementRect A rect of positioned {@link Options#element}.
+// @param {utils/dom/rect~Rect} limiterRect A rect of the {@link Options#limiter}.
 // @param {utils/dom/rect~Rect} viewportRect A rect of the viewport.
 // @returns {Array} An array containing the name of the position and it's rect.
 function getBestPosition( positions, targetRect, elementRect, limiterRect, viewportRect ) {
@@ -257,47 +257,23 @@ function getAbsoluteRectCoordinates( { left, top } ) {
 /**
  * The `getOptimalPosition` helper options.
  *
- * @interface module:utils/dom/position~Options
- */
-
-/**
- * Element that is to be positioned.
- *
- * @member {HTMLElement} #element
- */
-
-/**
+ * @typedef {Object} Options
+ * @property {HTMLElement} element Element that is to be positioned.
+ * @property {HTMLElement|Range|ClientRect|Rect|Function} target
  * Target with respect to which the `element` is to be positioned.
- *
- * @member {HTMLElement|Range|ClientRect|Rect|Function} #target
- */
-
-/**
- * An array of functions which return {@link module:utils/dom/position~Position} relative
+ * @property {Array.<Function>} positions An array of functions which return {@link Position} relative
  * to the `target`, in the order of preference.
- *
- * @member {Array.<Function>} #positions
- */
-
-/**
- * When set, the algorithm will chose position which fits the most in the
- * limiter's bounding rect.
- *
- * @member {HTMLElement|Range|ClientRect|Rect|Function} #limiter
- */
-
-/**
- * When set, the algorithm will chose such a position which fits `element`
+ * @property {HTMLElement|Range|ClientRect|Rect|Function} limiter When set, the algorithm
+ * will chose position which fits the most in the limiter's bounding rect.
+ * @property {Boolean} fitInViewport When set, the algorithm will chose such a position which fits `element`
  * the most inside visible viewport.
- *
- * @member {Boolean} #fitInViewport
  */
 
 /**
  * An object describing a position in `position: absolute` coordinate
  * system, along with position name.
  *
- * @typedef {Object} module:utils/dom/position~Position
+ * @typedef {Object} Position
  *
  * @property {Number} top Top position offset.
  * @property {Number} left Left position offset.

@@ -9,9 +9,12 @@
  * @module utils/translation-service
  */
 
+/** @type any */
+const windowOrGlobal = typeof window === 'object' ? window : global;
+
 /* istanbul ignore else */
-if ( !window.CKEDITOR_TRANSLATIONS ) {
-	window.CKEDITOR_TRANSLATIONS = {};
+if ( !windowOrGlobal.CKEDITOR_TRANSLATIONS ) {
+	windowOrGlobal.CKEDITOR_TRANSLATIONS = {};
 }
 
 /**
@@ -42,7 +45,7 @@ if ( !window.CKEDITOR_TRANSLATIONS ) {
  * @param {Object.<String, String>} translations Translations which will be added to the dictionary.
  */
 export function add( language, translations ) {
-	const dictionary = window.CKEDITOR_TRANSLATIONS[ language ] || ( window.CKEDITOR_TRANSLATIONS[ language ] = {} );
+	const dictionary = windowOrGlobal.CKEDITOR_TRANSLATIONS[ language ] || ( windowOrGlobal.CKEDITOR_TRANSLATIONS[ language ] = {} );
 
 	Object.assign( dictionary, translations );
 }
@@ -70,14 +73,14 @@ export function translate( language, translationKey ) {
 	if ( numberOfLanguages === 1 ) {
 		// Override the language to the only supported one.
 		// This can't be done in the `Locale` class, because the translations comes after the `Locale` class initialization.
-		language = Object.keys( window.CKEDITOR_TRANSLATIONS )[ 0 ];
+		language = Object.keys( windowOrGlobal.CKEDITOR_TRANSLATIONS )[ 0 ];
 	}
 
 	if ( numberOfLanguages === 0 || !hasTranslation( language, translationKey ) ) {
 		return translationKey.replace( / \[context: [^\]]+\]$/, '' );
 	}
 
-	const dictionary = window.CKEDITOR_TRANSLATIONS[ language ];
+	const dictionary = windowOrGlobal.CKEDITOR_TRANSLATIONS[ language ];
 
 	// In case of missing translations we still need to cut off the `[context: ]` parts.
 	return dictionary[ translationKey ].replace( / \[context: [^\]]+\]$/, '' );
@@ -89,17 +92,17 @@ export function translate( language, translationKey ) {
  * @protected
  */
 export function _clear() {
-	window.CKEDITOR_TRANSLATIONS = {};
+	windowOrGlobal.CKEDITOR_TRANSLATIONS = {};
 }
 
 // Checks whether the dictionary exists and translation in that dictionary exists.
 function hasTranslation( language, translationKey ) {
 	return (
-		( language in window.CKEDITOR_TRANSLATIONS ) &&
-		( translationKey in window.CKEDITOR_TRANSLATIONS[ language ] )
+		( language in windowOrGlobal.CKEDITOR_TRANSLATIONS ) &&
+		( translationKey in windowOrGlobal.CKEDITOR_TRANSLATIONS[ language ] )
 	);
 }
 
 function getNumberOfLanguages() {
-	return Object.keys( window.CKEDITOR_TRANSLATIONS ).length;
+	return Object.keys( windowOrGlobal.CKEDITOR_TRANSLATIONS ).length;
 }

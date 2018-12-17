@@ -12,6 +12,7 @@
 import log from './log';
 import { version } from 'ckeditor5/package.json';
 
+/** @type any */
 const windowOrGlobal = typeof window === 'object' ? window : global;
 
 if ( windowOrGlobal.CKEDITOR_VERSION ) {

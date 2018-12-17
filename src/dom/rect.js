@@ -47,7 +47,7 @@ export default class Rect {
 	 * ant the rect of a `window` includes scrollbars too. Use {@link #excludeScrollbarsAndBorders}
 	 * to get the inner part of the rect.
 	 *
-	 * @param {HTMLElement|Range|Window|ClientRect|module:utils/dom/rect~Rect|Object} source A source object to create the rect.
+	 * @param {HTMLElement|Range|Window|ClientRect|Rect|Object} source A source object to create the rect.
 	 */
 	constructor( source ) {
 		const isSourceRange = isRange( source );
@@ -57,8 +57,10 @@ export default class Rect {
 		 *
 		 * @protected
 		 * @readonly
-		 * @member {HTMLElement|Range|ClientRect|module:utils/dom/rect~Rect|Object} #_source
+		 * @type {HTMLElement|Range|ClientRect|Rect|Window}
 		 */
+		this._source;
+
 		Object.defineProperty( this, '_source', {
 			// If the source is a Rect instance, copy it's #_source.
 			value: source._source || source,
@@ -140,21 +142,23 @@ export default class Rect {
 		 * The "width" value of the rect.
 		 *
 		 * @readonly
-		 * @member {Number} #width
+		 * @type {Number}
 		 */
+		this.width;
 
 		/**
 		 * The "height" value of the rect.
 		 *
 		 * @readonly
-		 * @member {Number} #height
+		 *  @type {Number}
 		 */
+		this.height;
 	}
 
 	/**
 	 * Returns a clone of the rect.
 	 *
-	 * @returns {module:utils/dom/rect~Rect} A cloned rect.
+	 * @returns {Rect} A cloned rect.
 	 */
 	clone() {
 		return new Rect( this );
@@ -165,7 +169,7 @@ export default class Rect {
 	 *
 	 * @param {Number} x Desired horizontal location.
 	 * @param {Number} y Desired vertical location.
-	 * @returns {module:utils/dom/rect~Rect} A rect which has been moved.
+	 * @returns {Rect} A rect which has been moved.
 	 */
 	moveTo( x, y ) {
 		this.top = y;
@@ -181,7 +185,7 @@ export default class Rect {
 	 *
 	 * @param {Number} x A horizontal offset.
 	 * @param {Number} y A vertical offset
-	 * @returns {module:utils/dom/rect~Rect} A rect which has been moved.
+	 * @returns {Rect} A rect which has been moved.
 	 */
 	moveBy( x, y ) {
 		this.top += y;
@@ -195,8 +199,8 @@ export default class Rect {
 	/**
 	 * Returns a new rect a a result of intersection with another rect.
 	 *
-	 * @param {module:utils/dom/rect~Rect} anotherRect
-	 * @returns {module:utils/dom/rect~Rect}
+	 * @param {Rect} anotherRect
+	 * @returns {Rect}
 	 */
 	getIntersection( anotherRect ) {
 		const rect = {
@@ -219,7 +223,7 @@ export default class Rect {
 	/**
 	 * Returns the area of intersection with another rect.
 	 *
-	 * @param {module:utils/dom/rect~Rect} anotherRect [description]
+	 * @param {Rect} anotherRect [description]
 	 * @returns {Number} Area of intersection.
 	 */
 	getIntersectionArea( anotherRect ) {
@@ -249,7 +253,7 @@ export default class Rect {
 	 * If there's no such visible rect, which is when the rect is limited by one or many of
 	 * the ancestors, `null` is returned.
 	 *
-	 * @returns {module:utils/dom/rect~Rect|null} A visible rect instance or `null`, if there's none.
+	 * @returns {Rect|null} A visible rect instance or `null`, if there's none.
 	 */
 	getVisible() {
 		const source = this._source;
@@ -286,7 +290,7 @@ export default class Rect {
 	 * {@link #bottom}, {@link #width} and {@link #height}) are the equal in both rect
 	 * instances.
 	 *
-	 * @param {module:utils/dom/rect~Rect} rect A rect instance to compare with.
+	 * @param {Rect} anotherRect A rect instance to compare with.
 	 * @returns {Boolean} `true` when Rects are equal. `false` otherwise.
 	 */
 	isEqual( anotherRect ) {
@@ -302,7 +306,7 @@ export default class Rect {
 	/**
 	 * Checks whether a rect fully contains another rect instance.
 	 *
-	 * @param {module:utils/dom/rect~Rect} anotherRect
+	 * @param {Rect} anotherRect
 	 * @returns {Boolean} `true` if contains, `false` otherwise.
 	 */
 	contains( anotherRect ) {
@@ -317,15 +321,16 @@ export default class Rect {
 	 * * Borders are removed when {@link #_source} is an HTML element.
 	 * * Scrollbars are excluded from HTML elements and the `window`.
 	 *
-	 * @returns {module:utils/dom/rect~Rect} A rect which has been updated.
+	 * @returns {Rect} A rect which has been updated.
 	 */
 	excludeScrollbarsAndBorders() {
 		const source = this._source;
 		let scrollBarWidth, scrollBarHeight;
 
 		if ( isWindow( source ) ) {
-			scrollBarWidth = source.innerWidth - source.document.documentElement.clientWidth;
-			scrollBarHeight = source.innerHeight - source.document.documentElement.clientHeight;
+			const windowSource = /** @type {Window} */ ( source );
+			scrollBarWidth = windowSource.innerWidth - windowSource.document.documentElement.clientWidth;
+			scrollBarHeight = windowSource.innerHeight - windowSource.document.documentElement.clientHeight;
 		} else {
 			const borderWidths = getBorderWidths( this._source );
 
@@ -349,7 +354,7 @@ export default class Rect {
 	 * Returns an array of rects of the given native DOM Range.
 	 *
 	 * @param {Range} range A native DOM range.
-	 * @returns {Array.<module:utils/dom/rect~Rect>} DOM Range rects.
+	 * @returns {Array.<Rect>} DOM Range rects.
 	 */
 	static getDomRangeRects( range ) {
 		const rects = [];
@@ -386,8 +391,8 @@ export default class Rect {
 // Acquires all the rect properties from the passed source.
 //
 // @private
-// @param {module:utils/dom/rect~Rect} rect
-// @param {ClientRect|module:utils/dom/rect~Rect|Object} source
+// @param {Rect} rect
+// @param {ClientRect|Rect|Object} source
 function copyRectProperties( rect, source ) {
 	for ( const p of rectProperties ) {
 		rect[ p ] = source[ p ];

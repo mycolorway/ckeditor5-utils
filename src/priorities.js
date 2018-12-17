@@ -8,12 +8,6 @@
  */
 
 /**
- * String representing a priority value.
- *
- * @typedef {'highest'|'high'|'normal'|'low'|'lowest'} module:utils/priorities~PriorityString
- */
-
-/**
  * Provides group of constants to use instead of hardcoding numeric priority values.
  *
  * @namespace
@@ -23,7 +17,7 @@ const priorities = {
 	 * Converts a string with priority name to it's numeric value. If `Number` is given, it just returns it.
 	 *
 	 * @static
-	 * @param {module:utils/priorities~PriorityString|Number} priority Priority to convert.
+	 * @param {import('./Priority').Priority} priority Priority to convert.
 	 * @returns {Number} Converted priority.
 	 */
 	get( priority ) {

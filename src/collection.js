@@ -23,8 +23,9 @@ import mix from './mix';
  * configured through the constructor of the collection.
  *
  * @mixes module:utils/emittermixin~EmitterMixin
+ * @template T
  */
-export default class Collection {
+export default class Collection extends EmitterMixin {
 	/**
 	 * Creates a new Collection instance.
 	 *
@@ -32,11 +33,12 @@ export default class Collection {
 	 * @param {String} [options.idProperty='id'] The name of the property which is considered to identify an item.
 	 */
 	constructor( options = {} ) {
+		super();
 		/**
 		 * The internal list of items in the collection.
 		 *
 		 * @private
-		 * @member {Object[]}
+		 * @type {T[]}
 		 */
 		this._items = [];
 
@@ -44,7 +46,7 @@ export default class Collection {
 		 * The internal map of items in the collection.
 		 *
 		 * @private
-		 * @member {Map}
+		 * @type {Map.<string,T>}
 		 */
 		this._itemMap = new Map();
 
@@ -64,7 +66,7 @@ export default class Collection {
 		 * See {@link #_bindToInternalToExternalMap}.
 		 *
 		 * @protected
-		 * @member {WeakMap}
+		 * @type {WeakMap}
 		 */
 		this._bindToExternalToInternalMap = new WeakMap();
 
@@ -76,7 +78,7 @@ export default class Collection {
 		 * See {@link #_bindToExternalToInternalMap}.
 		 *
 		 * @protected
-		 * @member {WeakMap}
+		 * @type {WeakMap}
 		 */
 		this._bindToInternalToExternalMap = new WeakMap();
 
@@ -84,7 +86,7 @@ export default class Collection {
 		 * Stores indexes of skipped items from bound external collection.
 		 *
 		 * @private
-		 * @member {Array}
+		 * @type {Array}
 		 */
 		this._skippedIndexesFromExternal = [];
 
@@ -93,14 +95,14 @@ export default class Collection {
 		 * of calling {@link #bindTo} method.
 		 *
 		 * @protected
-		 * @member {module:utils/collection~Collection} #_bindToCollection
+		 * @member {Collection} #_bindToCollection
 		 */
 	}
 
 	/**
 	 * The number of items available in the collection.
 	 *
-	 * @member {Number} #length
+	 * @type {Number}
 	 */
 	get length() {
 		return this._items.length;
@@ -109,7 +111,7 @@ export default class Collection {
 	/**
 	 * Returns the first item from the collection or null when collection is empty.
 	 *
-	 * @returns {Object|null} The first item or `null` if collection is empty.
+	 * @returns {T|null} The first item or `null` if collection is empty.
 	 */
 	get first() {
 		return this._items[ 0 ] || null;
@@ -118,7 +120,7 @@ export default class Collection {
 	/**
 	 * Returns the last item from the collection or null when collection is empty.
 	 *
-	 * @returns {Object|null} The last item or `null` if collection is empty.
+	 * @returns {T|null} The last item or `null` if collection is empty.
 	 */
 	get last() {
 		return this._items[ this.length - 1 ] || null;
@@ -129,8 +131,7 @@ export default class Collection {
 	 *
 	 * If the item does not have an id, then it will be automatically generated and set on the item.
 	 *
-	 * @chainable
-	 * @param {Object} item
+	 * @param {T} item
 	 * @param {Number} [index] The position of the item in the collection. The item
 	 * is pushed to the collection when `index` not specified.
 	 * @fires add
@@ -188,9 +189,10 @@ export default class Collection {
 	 * Gets item by its id or index.
 	 *
 	 * @param {String|Number} idOrIndex The item id or index in the collection.
-	 * @returns {Object|null} The requested item or `null` if such item does not exist.
+	 * @returns {T|null} The requested item or `null` if such item does not exist.
 	 */
 	get( idOrIndex ) {
+		/** @type T|null */
 		let item;
 
 		if ( typeof idOrIndex == 'string' ) {
@@ -287,9 +289,7 @@ export default class Collection {
 	/**
 	 * Executes the callback for each item in the collection and composes an array or values returned by this callback.
 	 *
-	 * @param {Function} callback
-	 * @param {Object} callback.item
-	 * @param {Number} callback.index
+	 * @param {( item: any, index: number, arr: T[] ) => void} callback
 	 * @param {Object} ctx Context in which the `callback` will be called.
 	 * @returns {Array} The result of mapping.
 	 */
@@ -300,11 +300,9 @@ export default class Collection {
 	/**
 	 * Finds the first item in the collection for which the `callback` returns a true value.
 	 *
-	 * @param {Function} callback
-	 * @param {Object} callback.item
-	 * @param {Number} callback.index
+	 * @param {( item: any, index: number, arr: T[] ) => boolean} callback
 	 * @param {Object} ctx Context in which the `callback` will be called.
-	 * @returns {Object} The item for which `callback` returned a true value.
+	 * @returns {T} The item for which `callback` returned a true value.
 	 */
 	find( callback, ctx ) {
 		return this._items.find( callback, ctx );
@@ -313,11 +311,9 @@ export default class Collection {
 	/**
 	 * Returns an array with items for which the `callback` returned a true value.
 	 *
-	 * @param {Function} callback
-	 * @param {Object} callback.item
-	 * @param {Number} callback.index
+	 * @param {( item: any, index: number, arr: T[] ) => boolean} callback
 	 * @param {Object} ctx Context in which the `callback` will be called.
-	 * @returns {Object[]} The array with matching items.
+	 * @returns {T[]} The array with matching items.
 	 */
 	filter( callback, ctx ) {
 		return this._items.filter( callback, ctx );
@@ -431,10 +427,8 @@ export default class Collection {
 	 *
 	 * **Note**: {@link #clear} can be used to break the binding.
 	 *
-	 * @param {module:utils/collection~Collection} externalCollection A collection to be bound.
-	 * @returns {Object}
-	 * @returns {module:utils/collection~Collection#bindTo#as} return.as
-	 * @returns {module:utils/collection~Collection#bindTo#using} return.using
+	 * @param {Collection} externalCollection A collection to be bound.
+	 * @returns {{as: Function, using: Function}}
 	 */
 	bindTo( externalCollection ) {
 		if ( this._bindToCollection ) {
@@ -453,7 +447,7 @@ export default class Collection {
 			 * Creates the class factory binding.
 			 *
 			 * @static
-			 * @param {Function} Class Specifies which class factory is to be initialized.
+			 * @param {FunctionConstructor} Class Specifies which class factory is to be initialized.
 			 */
 			as: Class => {
 				this._setUpBindToBinding( item => new Class( item ) );
@@ -605,7 +599,7 @@ export default class Collection {
 	/**
 	 * Iterable interface.
 	 *
-	 * @returns {Iterable.<*>}
+	 * @returns {IterableIterator.<T>}
 	 */
 	[ Symbol.iterator ]() {
 		return this._items[ Symbol.iterator ]();
@@ -615,16 +609,14 @@ export default class Collection {
 	 * Fired when an item is added to the collection.
 	 *
 	 * @event add
-	 * @param {Object} item The added item.
+	 * @param {T} item The added item.
 	 */
 
 	/**
 	 * Fired when an item is removed from the collection.
 	 *
 	 * @event remove
-	 * @param {Object} item The removed item.
+	 * @param {T} item The removed item.
 	 * @param {Number} index Index from which item was removed.
 	 */
 }
-
-mix( Collection, EmitterMixin );

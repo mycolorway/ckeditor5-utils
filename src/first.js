@@ -8,13 +8,14 @@
  */
 
 /**
- * Returns first item of the given `iterable`.
+ * Returns first item of the given `iterator`.
  *
- * @param {Iterable.<*>} iterable
- * @returns {*}
+ * @template T
+ * @param {Iterator.<T>} iterator
+ * @returns {T}
  */
-export default function first( iterable ) {
-	const iteratorItem = iterable.next();
+export default function first( iterator ) {
+	const iteratorItem = iterator.next();
 
 	if ( iteratorItem.done ) {
 		return null;

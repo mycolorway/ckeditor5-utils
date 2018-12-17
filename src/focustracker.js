@@ -17,7 +17,7 @@ import mix from './mix';
 /**
  * Allows observing a group of `HTMLElement`s whether at least one of them is focused.
  *
- * Used by the {@link module:core/editor/editor~Editor} in order to track whether the focus is still within the application,
+ * Used by the {@link Editor} in order to track whether the focus is still within the application,
  * or were used outside of its UI.
  *
  * **Note** `focus` and `blur` listeners use event capturing, so it is only needed to register wrapper `HTMLElement`
@@ -85,7 +85,7 @@ export default class FocusTracker {
 	 */
 	remove( element ) {
 		if ( element === this.focusedElement ) {
-			this._blur( element );
+			this._blur();
 		}
 
 		if ( this._elements.has( element ) ) {

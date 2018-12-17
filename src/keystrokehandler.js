@@ -13,7 +13,7 @@ import { getCode, parseKeystroke } from './keyboard';
 /**
  * Keystroke handler allows registering callbacks for given keystrokes.
  *
- * The most frequent use of this class is through the {@link module:core/editor/editor~Editor#keystrokes `editor.keystrokes`}
+ * The most frequent use of this class is through the {@link Editor#keystrokes `editor.keystrokes`}
  * property. It allows listening to keystrokes executed in the editing view:
  *
  *		editor.keystrokes.set( 'Ctrl+A', ( keyEvtData, cancel ) => {
@@ -58,7 +58,7 @@ export default class KeystrokeHandler {
 	/**
 	 * Starts listening for `keydown` events from a given emitter.
 	 *
-	 * @param {module:utils/emittermixin~Emitter} emitter
+	 * @param {import('./Emitter').Emitter} emitter
 	 */
 	listenTo( emitter ) {
 		// The #_listener works here as a kind of dispatcher. It groups the events coming from the same
@@ -84,7 +84,7 @@ export default class KeystrokeHandler {
 	 * {@link module:engine/view/observer/keyobserver~KeyEventData key event data} object and
 	 * a helper funcion to call both `preventDefault()` and `stopPropagation()` on the underlying event.
 	 * @param {Object} [options={}] Additional options.
-	 * @param {module:utils/priorities~PriorityString|Number} [options.priority='normal'] The priority of the keystroke
+	 * @param {import('./Priority').Priority} [options.priority='normal'] The priority of the keystroke
 	 * callback. The higher the priority value the sooner the callback will be executed. Keystrokes having the same priority
 	 * are called in the order they were added.
 	 */
@@ -114,7 +114,7 @@ export default class KeystrokeHandler {
 	/**
 	 * Triggers a keystroke handler for a specified key combination, if such a keystroke was {@link #set defined}.
 	 *
-	 * @param {module:engine/view/observer/keyobserver~KeyEventData} keyEvtData Key event data.
+	 * @param {KeyEventData} keyEvtData Key event data.
 	 * @returns {Boolean} Whether the keystroke was handled.
 	 */
 	press( keyEvtData ) {

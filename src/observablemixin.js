@@ -23,12 +23,8 @@ const boundPropertiesSymbol = Symbol( 'boundProperties' );
  * * {@glink framework/guides/architecture/core-editor-architecture#event-system-and-observables "Event system and observables"}
  * section of the {@glink framework/guides/architecture/core-editor-architecture "Core editor architecture"} guide,
  * * {@glink framework/guides/deep-dive/observables "Observables" deep dive} guide.
- *
- * @mixin ObservableMixin
- * @mixes module:utils/emittermixin~EmitterMixin
- * @implements module:utils/observablemixin~Observable
  */
-const ObservableMixin = {
+export default class ObservableMixin extends EmitterMixin {
 	/**
 	 * @inheritDoc
 	 */
@@ -95,7 +91,7 @@ const ObservableMixin = {
 		} );
 
 		this[ name ] = value;
-	},
+	}
 
 	/**
 	 * @inheritDoc
@@ -165,7 +161,7 @@ const ObservableMixin = {
 			_to: [],
 			_bindings: bindings
 		};
-	},
+	}
 
 	/**
 	 * @inheritDoc
@@ -228,7 +224,7 @@ const ObservableMixin = {
 			boundObservables.clear();
 			boundProperties.clear();
 		}
-	},
+	}
 
 	/**
 	 * @inheritDoc
@@ -259,10 +255,6 @@ const ObservableMixin = {
 		};
 	}
 };
-
-extend( ObservableMixin, EmitterMixin );
-
-export default ObservableMixin;
 
 // Init symbol properties needed to for the observable mechanism to work.
 //
@@ -672,7 +664,7 @@ function attachBindToListeners( observable, toBindings ) {
  * * {@glink framework/guides/deep-dive/observables "Observables" deep dive} guide.
  *
  * @interface Observable
- * @extends module:utils/emittermixin~Emitter
+ * @extends import('./Emitter').Emitter
  */
 
 /**
@@ -696,7 +688,7 @@ function attachBindToListeners( observable, toBindings ) {
  * Fired when a property value is going to be set but is not set yet (before the `change` event is fired).
  *
  * You can control the final value of the property by using
- * the {@link module:utils/eventinfo~EventInfo#return event's `return` property}.
+ * the {@link EventInfo#return event's `return` property}.
  *
  *		observable.set( 'prop', 1 );
  *
@@ -817,7 +809,7 @@ function attachBindToListeners( observable, toBindings ) {
  * Decorating the method does not change its behavior (it only adds an event),
  * but it allows to modify it later on by listening to the method's event.
  *
- * For example, to cancel the method execution the event can be {@link module:utils/eventinfo~EventInfo#stop stopped}:
+ * For example, to cancel the method execution the event can be {@link EventInfo#stop stopped}:
  *
  *		class Foo {
  *			constructor() {

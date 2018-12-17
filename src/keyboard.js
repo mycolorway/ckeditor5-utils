@@ -39,11 +39,11 @@ const modifiersToMacGlyphs = {
 export const keyCodes = generateKnownKeyCodes();
 
 /**
- * Converts a key name or a {@link module:utils/keyboard~KeystrokeInfo keystroke info} into a key code.
+ * Converts a key name or a {@link KeystrokeInfo keystroke info} into a key code.
  *
- * Note: Key names are matched with {@link module:utils/keyboard~keyCodes} in a case-insensitive way.
+ * Note: Key names are matched with {@link keyCodes} in a case-insensitive way.
  *
- * @param {String|module:utils/keyboard~KeystrokeInfo} Key name (see {@link module:utils/keyboard~keyCodes})
+ * @param {String|import('./keystrokeinfo').KeystrokeInfo} key Key name (see {@link keyCodes})
  * or a keystroke data object.
  * @returns {Number} Key or keystroke code.
  */
@@ -55,9 +55,9 @@ export function getCode( key ) {
 
 		if ( !keyCode ) {
 			/**
-			 * Unknown key name. Only key names contained by the {@link module:utils/keyboard~keyCodes} can be used.
+			 * Unknown key name. Only key names contained by the {@link keyCodes} can be used.
 			 *
-			 * @errror keyboard-unknown-key
+			 * @error keyboard-unknown-key
 			 * @param {String} key
 			 */
 			throw new CKEditorError( 'keyboard-unknown-key: Unknown key name.', { key } );
@@ -74,16 +74,16 @@ export function getCode( key ) {
 
 /**
  * Parses keystroke and returns a keystroke code that will match the code returned by
- * link {@link module:utils/keyboard.getCode} for a corresponding {@link module:utils/keyboard~KeystrokeInfo keystroke info}.
+ * link {@link module:utils/keyboard.getCode} for a corresponding {@link KeystrokeInfo keystroke info}.
  *
  * The keystroke can be passed in two formats:
  *
  * * as a single string – e.g. `ctrl + A`,
- * * as an array of {@link module:utils/keyboard~keyCodes known key names} and key codes – e.g.:
+ * * as an array of {@link keyCodes known key names} and key codes – e.g.:
  *   * `[ 'ctrl', 32 ]` (ctrl + space),
  *   * `[ 'ctrl', 'a' ]` (ctrl + A).
  *
- * Note: Key names are matched with {@link module:utils/keyboard~keyCodes} in a case-insensitive way.
+ * Note: Key names are matched with {@link keyCodes} in a case-insensitive way.
  *
  * Note: Only keystrokes with a single non-modifier key are supported (e.g. `ctrl+A` is OK, but `ctrl+A+B` is not).
  *
@@ -169,36 +169,10 @@ function generateKnownKeyCodes() {
 	return keyCodes;
 }
 
+/**
+ * @private
+ * @param {string} keystroke
+ */
 function splitKeystrokeText( keystroke ) {
 	return keystroke.split( /\s*\+\s*/ );
 }
-
-/**
- * Information about a keystroke.
- *
- * @interface module:utils/keyboard~KeystrokeInfo
- */
-
-/**
- * The [key code](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode).
- *
- * @member {Number} module:utils/keyboard~KeystrokeInfo#keyCode
- */
-
-/**
- * Whether the <kbd>Alt</kbd> modifier was pressed.
- *
- * @member {Bolean} module:utils/keyboard~KeystrokeInfo#altKey
- */
-
-/**
- * Whether the <kbd>Ctrl</kbd> or <kbd>Cmd</kbd> modifier was pressed.
- *
- * @member {Bolean} module:utils/keyboard~KeystrokeInfo#ctrlKey
- */
-
-/**
- * Whether the <kbd>Shift</kbd> modifier was pressed.
- *
- * @member {Bolean} module:utils/keyboard~KeystrokeInfo#shiftKey
- */

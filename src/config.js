@@ -89,7 +89,7 @@ export default class Config {
 	 *
 	 * @param {String|Object} name The configuration name or an object from which take properties as
 	 * configuration entries. Configuration names are case-sensitive.
-	 * @param {*} value The configuration value. Used if a name is passed.
+	 * @param {*} [value] The configuration value. Used if a name is passed.
 	 */
 	define( name, value ) {
 		const isDefine = true;

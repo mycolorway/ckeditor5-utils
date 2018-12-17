@@ -12,7 +12,7 @@
  * `unit` to the passed value.
  *
  * @param {String} unit An unit like "px" or "em".
- * @returns {module:utils/dom/tounit~helper}
+ * @returns {(value: Number) => String}
  */
 export default function toUnit( unit ) {
 	/**

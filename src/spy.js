@@ -7,6 +7,8 @@
  * @module utils/spy
  */
 
+/** @typedef {import('./SpyInterface').Spy} Spy */
+
 /**
  * Creates a spy function (ala Sinon.js) that can be used to inspect call to it.
  *
@@ -14,12 +16,16 @@
  *
  * * spy.called: property set to `true` if the function has been called at least once.
  *
- * @returns {Function} The spy function.
+ * @returns {Spy} The spy function.
  */
 function spy() {
-	return function spy() {
-		spy.called = true;
-	};
+	function f() {
+		const fn = /** @type Spy */ ( f );
+
+		fn.called = true;
+	}
+
+	return /** @type Spy */ ( f );
 }
 
 export default spy;

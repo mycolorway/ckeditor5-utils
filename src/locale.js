@@ -28,7 +28,7 @@ export default class Locale {
 		this.language = language || 'en';
 
 		/**
-		 * Translates the given string to the {@link #language}. This method is also available in {@link module:core/editor/editor~Editor#t}
+		 * Translates the given string to the {@link #language}. This method is also available in {@link Editor#t}
 		 * and {@link module:ui/view~View#t}.
 		 *
 		 * The strings may contain placeholders (`%<index>`) for values which are passed as the second argument.
@@ -44,9 +44,9 @@ export default class Locale {
 		 *
 		 * @method #t
 		 * @param {String} str The string to translate.
-		 * @param {String[]} [values] Values that should be used to interpolate the string.
+		 * @param {...String} [values] Values that should be used to interpolate the string.
 		 */
-		this.t = ( ...args ) => this._t( ...args );
+		this.t = ( str, ...values ) => this._t( str, ...values );
 	}
 
 	/**
