@@ -7,6 +7,8 @@
  * @module utils/dom/iswindow
  */
 
+import env from '../env';
+
 /**
  * Checks if the object is a native DOM Window.
  *
@@ -14,6 +16,10 @@
  * @returns {Boolean}
  */
 export default function isWindow( obj ) {
+	if ( env.isIe11 && !obj ) {
+		return false;
+	}
+
 	const stringifiedObject = Object.prototype.toString.apply( obj );
 
 	// Returns `true` for the `window` object in browser environments.

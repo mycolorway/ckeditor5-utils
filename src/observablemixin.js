@@ -270,7 +270,7 @@ export default ObservableMixin;
 // @param {module:utils/observablemixin~ObservableMixin} observable
 function initObservable( observable ) {
 	// Do nothing if already inited.
-	if ( observablePropertiesSymbol in observable ) {
+	if ( observable.hasOwnProperty( observablePropertiesSymbol ) ) {
 		return;
 	}
 

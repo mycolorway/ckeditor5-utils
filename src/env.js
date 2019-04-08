@@ -34,6 +34,14 @@ const env = {
 	isEdge: isEdge( userAgent ),
 
 	/**
+	 * Indicates that the application is running in Microsoft Internet Explorer 11.
+	 *
+	 * @static
+	 * @member {Boolean} module:utils/env~env#isEdge
+	 */
+	isIe11: isIe11( userAgent ),
+
+	/**
 	 * Indicates that the application is running in Firefox (Gecko).
 	 *
 	 * @static
@@ -70,6 +78,16 @@ export function isMac( userAgent ) {
  */
 export function isEdge( userAgent ) {
 	return !!userAgent.match( /edge\/(\d+.?\d*)/ );
+}
+
+/**
+ * Checks if User Agent represented by the string is Microsoft Internet Explorer 11.
+ *
+ * @param {String} userAgent **Lowercase** `navigator.userAgent` string.
+ * @returns {Boolean} Whether User Agent is Internet Explorer 11 or not.
+ */
+export function isIe11( userAgent ) {
+	return !!userAgent.match( /trident\/(7|8)/ );
 }
 
 /**
