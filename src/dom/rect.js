@@ -168,10 +168,10 @@ export default class Rect {
 	 * @returns {module:utils/dom/rect~Rect} A rect which has been moved.
 	 */
 	moveTo( x, y ) {
-		this.top = y;
-		this.right = x + this.width;
-		this.bottom = y + this.height;
-		this.left = x;
+		this.top = parseInt( y );
+		this.right = parseInt( x ) + this.width;
+		this.bottom = parseInt( y ) + this.height;
+		this.left = parseInt( x );
 
 		return this;
 	}
@@ -184,10 +184,10 @@ export default class Rect {
 	 * @returns {module:utils/dom/rect~Rect} A rect which has been moved.
 	 */
 	moveBy( x, y ) {
-		this.top += y;
-		this.right += x;
-		this.left += x;
-		this.bottom += y;
+		this.top += parseInt( y );
+		this.right += parseInt( x );
+		this.left += parseInt( x );
+		this.bottom += parseInt( y );
 
 		return this;
 	}
@@ -390,8 +390,12 @@ export default class Rect {
 // @param {ClientRect|module:utils/dom/rect~Rect|Object} source
 function copyRectProperties( rect, source ) {
 	for ( const p of rectProperties ) {
-		rect[ p ] = source[ p ];
+		rect[ p ] = parseInt( source[ p ] );
 	}
+
+	// Re-calculate this
+	rect.width = rect.right - rect.left;
+	rect.height = rect.bottom - rect.top;
 }
 
 // Checks if provided object is a <body> HTML element.

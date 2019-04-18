@@ -418,6 +418,10 @@ describe( 'Rect', () => {
 	describe( 'getArea()', () => {
 		it( 'should calculate the area', () => {
 			const rect = new Rect( {
+				top: 200,
+				bottom: 250,
+				left: 0,
+				right: 100,
 				width: 100,
 				height: 50
 			} );
@@ -709,9 +713,9 @@ describe( 'Rect', () => {
 				top: 10,
 				right: 20,
 				bottom: 30,
-				left: 40,
+				left: 30, // !
 				width: 10,
-				height: 30 // !
+				height: 10 // !
 			} );
 
 			expect( rectA.isEqual( rectB ) ).to.be.false;
