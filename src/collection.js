@@ -33,6 +33,14 @@ export default class Collection {
 	 */
 	constructor( options = {} ) {
 		/**
+		 * The number of items available in the collection.
+		 *
+		 * @observable
+		 * @member {Number} #length
+		 */
+		this.set( 'length', 0 );
+
+		/**
 		 * The internal list of items in the collection.
 		 *
 		 * @private
@@ -95,15 +103,6 @@ export default class Collection {
 		 * @protected
 		 * @member {module:utils/collection~Collection} #_bindToCollection
 		 */
-	}
-
-	/**
-	 * The number of items available in the collection.
-	 *
-	 * @member {Number} #length
-	 */
-	get length() {
-		return this._items.length;
 	}
 
 	/**
@@ -179,6 +178,7 @@ export default class Collection {
 
 		this._itemMap.set( itemId, item );
 
+		this.length++;
 		this.fire( 'add', item, index );
 
 		return this;
@@ -296,6 +296,7 @@ export default class Collection {
 		this._bindToInternalToExternalMap.delete( item );
 		this._bindToExternalToInternalMap.delete( externalItem );
 
+		this.length--;
 		this.fire( 'remove', item, index );
 
 		return item;
