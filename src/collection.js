@@ -7,7 +7,7 @@
  * @module utils/collection
  */
 
-import EmitterMixin from './emittermixin';
+import ObservableMixin from './observablemixin';
 import CKEditorError from './ckeditorerror';
 import uid from './uid';
 import mix from './mix';
@@ -22,7 +22,7 @@ import mix from './mix';
  * By default an item in the collection is identified by its `id` property. The name of the identifier can be
  * configured through the constructor of the collection.
  *
- * @mixes module:utils/emittermixin~EmitterMixin
+ * @mixes module:utils/observablemixin~ObservableMixin
  */
 export default class Collection {
 	/**
@@ -630,7 +630,7 @@ export default class Collection {
 	 */
 }
 
-mix( Collection, EmitterMixin );
+mix( Collection, ObservableMixin );
 
 /**
  * An object returned by the {@link module:utils/collection~Collection#bindTo `bindTo()`} method
