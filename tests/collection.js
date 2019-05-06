@@ -48,6 +48,19 @@ describe( 'Collection', () => {
 
 			expect( collection.length ).to.equal( 1 );
 		} );
+
+		it( 'should be observable', () => {
+			const spy = sinon.spy();
+
+			collection.on( 'change:length', spy );
+
+			collection.add( { id: 'foo' } );
+			collection.remove( 'foo' );
+
+			sinon.assert.calledTwice( spy );
+			sinon.assert.calledWithExactly( spy.firstCall, sinon.match.any, 'length', 1, 0 );
+			sinon.assert.calledWithExactly( spy.secondCall, sinon.match.any, 'length', 0, 1 );
+		} );
 	} );
 
 	describe( 'first', () => {
