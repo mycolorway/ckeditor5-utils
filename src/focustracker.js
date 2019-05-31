@@ -78,7 +78,9 @@ export default class FocusTracker {
 			throw new CKEditorError( 'focusTracker-add-element-already-exist' );
 		}
 
-		this.listenTo( element, 'focus', () => this._focus( element ), { useCapture: true } );
+		this.listenTo( element, 'focus', evt => {
+			return this._focus( evt.source._domNode );
+		}, { useCapture: true } );
 		this.listenTo( element, 'blur', () => this._blur(), { useCapture: true } );
 		this._elements.add( element );
 	}
@@ -106,6 +108,10 @@ export default class FocusTracker {
 	 */
 	destroy() {
 		this.stopListening();
+		this._destroyObservable();
+		this._elements.clear();
+		this.focusedElement = undefined;
+		clearTimeout( this._nextEventLoopTimeout );
 	}
 
 	/**

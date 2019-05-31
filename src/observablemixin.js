@@ -257,6 +257,12 @@ const ObservableMixin = {
 		this[ methodName ] = function( ...args ) {
 			return this.fire( methodName, args );
 		};
+	},
+
+	_destroyObservable() {
+		this[ observablePropertiesSymbol ] && this[ observablePropertiesSymbol ].clear();
+		this[ boundObservablesSymbol ] && this[ boundObservablesSymbol ].clear();
+		this[ boundPropertiesSymbol ] && this[ boundPropertiesSymbol ].clear();
 	}
 };
 

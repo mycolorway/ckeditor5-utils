@@ -177,6 +177,7 @@ const EmitterMixin = {
 				this.stopListening( emitters[ emitterId ].emitter );
 			}
 			delete this[ _listeningTo ];
+			this.stopDelegating();
 		}
 	},
 
