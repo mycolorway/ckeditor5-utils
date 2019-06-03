@@ -353,6 +353,8 @@ export default class Collection {
 		while ( this.length ) {
 			this.remove( 0 );
 		}
+
+		this._itemMap.clear();
 	}
 
 	/**
