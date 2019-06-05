@@ -260,10 +260,10 @@ const ObservableMixin = {
 	},
 
 	_destroyObservable() {
-		this.unbind();
-		this[ observablePropertiesSymbol ] && this[ observablePropertiesSymbol ].clear();
-		this[ boundObservablesSymbol ] && this[ boundObservablesSymbol ].clear();
-		this[ boundPropertiesSymbol ] && this[ boundPropertiesSymbol ].clear();
+		// this.unbind();
+		// this[ observablePropertiesSymbol ] && this[ observablePropertiesSymbol ].clear();
+		// this[ boundObservablesSymbol ] && this[ boundObservablesSymbol ].clear();
+		// this[ boundPropertiesSymbol ] && this[ boundPropertiesSymbol ].clear();
 	}
 };
 
