@@ -15,7 +15,7 @@ function getItem( id, idProperty ) {
 	};
 }
 
-describe.only( 'Collection', () => {
+describe( 'Collection', () => {
 	let collection;
 
 	testUtils.createSinonSandbox();
