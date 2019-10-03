@@ -378,6 +378,20 @@ describe.only( 'Collection', () => {
 				expect( collection.get( 'foo' ) ).to.equal( item1 );
 				expect( collection.get( 'bar' ) ).to.equal( item2 );
 			} );
+
+			it( 'fires #add for all new items', () => {
+				const spy = sinon.spy();
+				const collection = new Collection( [ getItem( 'first' ) ] );
+				const item1 = getItem( 'foo' );
+				const item2 = getItem( 'bar' );
+
+				collection.on( 'add', spy );
+				collection.add( item1, item2 );
+
+				sinon.assert.calledTwice( spy );
+				sinon.assert.calledWithExactly( spy.firstCall, sinon.match.has( 'source', collection ), item1, 1 );
+				sinon.assert.calledWithExactly( spy.secondCall, sinon.match.has( 'source', collection ), item2, 2 );
+			} );
 		} );
 	} );
 
