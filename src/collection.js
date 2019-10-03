@@ -658,6 +658,14 @@ export default class Collection {
 		} );
 	}
 
+	/**
+	 * For a given item to be added to the collection, it validates item's "id" property or generates
+	 * a new one if missing. If the validation was successful or a new id was generated,
+	 * the id is returned by the method. Otherwise, an error is thrown.
+	 *
+	 * @private
+	 * @param {Object} item An item to be added to the collection.
+	 */
 	_getItemIdBeforeAdding( item ) {
 		const idProperty = this._idProperty;
 		let itemId;
