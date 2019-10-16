@@ -38,6 +38,18 @@ describe( 'Collection', () => {
 			expect( collection.get( 'bar' ) ).to.equal( item2 );
 		} );
 
+		it( 'does not use the initial items array internally', () => {
+			const item1 = getItem( 'foo' );
+			const item2 = getItem( 'bar' );
+			const initialItems = [ item1, item2 ];
+			const collection = new Collection( initialItems );
+
+			initialItems.pop();
+
+			expect( collection.get( 0 ) ).to.equal( item1 );
+			expect( collection.get( 1 ) ).to.equal( item2 );
+		} );
+
 		describe( 'options', () => {
 			it( 'allow to change the id property used by the collection', () => {
 				const item1 = { id: 'foo', name: 'xx' };

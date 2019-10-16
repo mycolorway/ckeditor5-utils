@@ -73,7 +73,7 @@ export default class Collection {
 		 * @private
 		 * @member {Object[]}
 		 */
-		this._items = [];
+		this._items = hasInitialItems ? [ ...initialItemsOrOptions ] : [];
 
 		/**
 		 * The internal map of items in the collection.
@@ -126,7 +126,6 @@ export default class Collection {
 		// Set the initial content of the collection (if provided in the constructor).
 		if ( hasInitialItems ) {
 			for ( const item of initialItemsOrOptions ) {
-				this._items.push( item );
 				this._itemMap.set( this._getItemIdBeforeAdding( item ), item );
 			}
 		}
