@@ -61,9 +61,11 @@ export default class Collection {
 	 * Items that do not have such a property will be assigned one when added to the collection.
 	 */
 	constructor( initialItemsOrOptions = {}, options = {} ) {
-		const hasInitialItems = initialItemsOrOptions instanceof Array;
+		let initialItems = [];
 
-		if ( !hasInitialItems ) {
+		if ( initialItemsOrOptions instanceof Array ) {
+			initialItems = initialItemsOrOptions;
+		} else {
 			options = initialItemsOrOptions;
 		}
 
@@ -73,7 +75,7 @@ export default class Collection {
 		 * @private
 		 * @member {Object[]}
 		 */
-		this._items = hasInitialItems ? [ ...initialItemsOrOptions ] : [];
+		this._items = [ ...initialItems ];
 
 		/**
 		 * The internal map of items in the collection.
@@ -124,10 +126,8 @@ export default class Collection {
 		this._skippedIndexesFromExternal = [];
 
 		// Set the initial content of the collection (if provided in the constructor).
-		if ( hasInitialItems ) {
-			for ( const item of initialItemsOrOptions ) {
-				this._itemMap.set( this._getItemIdBeforeAdding( item ), item );
-			}
+		for ( const item of initialItems ) {
+			this._itemMap.set( this._getItemIdBeforeAdding( item ), item );
 		}
 
 		/**
