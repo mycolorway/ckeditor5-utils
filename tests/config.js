@@ -343,6 +343,21 @@ describe( 'Config', () => {
 			expect( config.get( 'resize.icon.path' ) ).to.equal( 'xyz' );
 		} );
 
+		it( 'should retrieve a deeply nested function', () => {
+			function dummy() {
+				return 1;
+			}
+
+			const nestedFunctionConfig = new Config( {
+				parent: {
+					fn: dummy
+				}
+			} );
+
+			expect( nestedFunctionConfig.get( 'parent.fn' ) ).to.be.a( 'function' );
+			expect( nestedFunctionConfig.get( 'parent.fn' ) ).to.equal( dummy );
+		} );
+
 		it( 'should retrieve an object of the configuration', () => {
 			const resize = config.get( 'resize' );
 
